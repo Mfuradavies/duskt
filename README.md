@@ -1,114 +1,83 @@
 # duskt
 
-A minimal, keyboard-friendly terminal video downloader using [yt-dlp](https://github.com/yt-dlp/yt-dlp) and [Textual](https://textual.textualize.io/).
+A simple keyboard-first terminal video and audio downloader.
 
-## Run from source
+## Download
 
-```bash
-python -m venv .venv
-. .venv/bin/activate       # Windows: .venv\Scripts\activate
-python -m pip install -e .
-duskt
-```
+1. Open the repository's **Releases** page:
+   <https://github.com/Mfuradavies/duskt/releases>
+2. Open the newest release.
+3. Download the file for your operating system:
 
-Paste a URL and press Enter. Confirm the fixed YouTube title, then use the format picker:
-arrow keys move, Space selects multiple formats, and Enter starts the downloads.
-Files are saved to `~/downloads` in the user's home directory.
-The format list includes both video qualities and audio-only formats.
+   | Operating system | Download |
+   |---|---|
+   | Linux, 64-bit | `duskt-linux-x86_64` |
+   | Windows, 64-bit | `duskt-windows-x86_64.exe` |
+   | macOS, Intel | `duskt-macos-x86_64` |
 
-Playlist URLs show up to 25 songs in a video selector before the format selector.
-YouTube titles are kept unchanged and cannot be edited.
+Do not download the source code archive. Download only the executable for your
+computer.
 
-## Build a standalone executable
+## Run
 
-Install the build extra and run PyInstaller:
+### Linux
 
-```bash
-python -m pip install -e ".[build]"
-python -m PyInstaller --clean --noconfirm --onefile --name duskt \
-  --paths src --add-data "src/duskt/app.tcss:duskt" src/duskt/__main__.py
-```
-
-The executable is written to `dist/`. Test it from the project directory:
+Open a terminal in the folder containing the download:
 
 ```bash
-./dist/duskt                 # Linux/macOS
-dist\\duskt.exe              # Windows
+chmod +x duskt-linux-x86_64
+./duskt-linux-x86_64
 ```
 
-### Shipping to other users
+### macOS
 
-PyInstaller bundles Python and Duskt's dependencies, so recipients do not need
-Python, Textual, yt-dlp, or a compiler installed. Builds are platform-specific:
-build each artifact on the operating system it targets (or use a matching CI
-runner). Do not copy a Linux binary to Windows or macOS.
-
-#### Linux
-
-Build on Linux and distribute `dist/duskt`. Mark it executable if needed:
+Open Terminal in the folder containing the download:
 
 ```bash
-chmod +x dist/duskt
-./dist/duskt
+chmod +x duskt-macos-x86_64
+./duskt-macos-x86_64
 ```
 
-#### macOS
+If macOS blocks the app, open **System Settings → Privacy & Security** and
+approve the blocked executable, then run the command again.
 
-Build on macOS and distribute `dist/duskt`. If macOS blocks an unsigned binary,
-the user can approve it in **System Settings → Privacy & Security**, or you can
-sign/notarize it before shipping.
+This release targets Intel Macs. Apple Silicon Macs may need Rosetta 2.
 
-#### Windows
+### Windows
 
-Build on Windows and distribute `dist\\duskt.exe`. The user can open it from
-PowerShell:
+Open PowerShell in the folder containing the download:
 
 ```powershell
-.\dist\duskt.exe
+.\duskt-windows-x86_64.exe
 ```
 
-Downloads are saved in `downloads` under the user's home directory, regardless
-of where Duskt is started. Users need write permission there. The terminal must
-support interactive keyboard input and Unicode characters for the best display.
+If Windows SmartScreen appears, verify that you downloaded the executable from
+the official GitHub Releases page before choosing **More info → Run anyway**.
 
-For release archives, include only the platform executable and a short copy of
-these run instructions. Keep `build/`, `dist/`, and generated spec files out of
-source control.
+## Use duskt
 
-### Publish one-file GitHub releases
+1. Paste a video or playlist URL and press **Enter**.
+2. For a playlist, use **Up/Down** to move, **Space** to select videos, and
+   **Enter** to continue.
+3. Use **Space** to select one or more video or audio formats.
+4. Press **Enter** to start downloading.
+5. Press **Q** to quit.
 
-The repository includes a GitHub Actions workflow at
-`.github/workflows/release.yml`. It builds separate one-file executables for
-Linux x86-64, Windows x86-64, and macOS Intel, then attaches them to a GitHub
-Release.
-
-To publish a release:
-
-1. Commit and push your changes.
-2. Create and push a version tag:
-
-   ```bash
-   git tag v0.1.0
-   git push origin v0.1.0
-   ```
-
-3. Open the **Actions** tab and wait for the workflow to finish.
-4. Open the generated GitHub Release and download the asset for the user's OS.
-
-Each user downloads exactly one executable:
+Playlists are limited to the first 25 items. YouTube titles remain unchanged.
+Downloads are saved to:
 
 ```text
-duskt-linux-x86_64
-duskt-windows-x86_64.exe
-duskt-macos-x86_64
+~/Downloads
 ```
 
-On Linux and macOS, the user may need to run `chmod +x` after downloading.
-macOS may also require approval in **System Settings → Privacy & Security**
-because the binary is unsigned.
+On Windows, this means the user's standard Downloads folder.
 
-Video formats that combine separate video and audio streams require FFmpeg.
-For a truly dependency-free release, either ship a platform FFmpeg binary and
-add it to the application, or select a format labeled as a single-file stream.
+## Notes
 
-The interface follows the palette, spacing, borders, progress treatment, and icon guidance in [DESIGN.md](DESIGN.md).
+- Use an interactive terminal; duskt is a terminal application, not a windowed
+  desktop app.
+- The terminal should support Unicode characters for the best display.
+- Some high-quality video formats require FFmpeg to merge separate video and
+  audio streams. If a selected format reports an FFmpeg error, choose an
+  audio-only or single-file video format.
+- Only download content you are authorized to save and use.
