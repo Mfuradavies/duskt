@@ -25,7 +25,7 @@ jobs:
             asset: duskt-windows-x86_64.exe
             executable: duskt.exe
             data_separator: ";"
-          - os: macos-13
+          - os: macos-14
             asset: duskt-macos-x86_64
             executable: duskt
             data_separator: ":"
