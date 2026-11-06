@@ -12,6 +12,7 @@ from textual.message import Message
 from textual.strip import Strip
 from textual.widgets import Footer, Input, ProgressBar, SelectionList, Static
 from textual.widgets._selection_list import Selection
+import pyperclip
 from rich.segment import Segment
 from rich.style import Style
 from textual.widgets._option_list import OptionDoesNotExist
@@ -26,6 +27,22 @@ from .downloader import (
 )
 
 SelectionType = TypeVar("SelectionType")
+
+
+class ClipboardInput(Input):
+    """Input with a clipboard fallback for terminals that don't paste Ctrl+V."""
+
+    BINDINGS = [
+        Binding("ctrl+v", "paste_clipboard", "Paste", show=False),
+        Binding("ctrl+shift+v", "paste_clipboard", "Paste", show=False),
+        Binding("shift+insert", "paste_clipboard", "Paste", show=False),
+    ]
+
+    def action_paste_clipboard(self) -> None:
+        try:
+            self.insert_text_at_cursor(pyperclip.paste())
+        except pyperclip.PyperclipException as exc:
+            self.notify(f"Clipboard unavailable: {exc}", severity="error")
 
 
 class RadioSelectionList(SelectionList[SelectionType], Generic[SelectionType]):
@@ -124,15 +141,17 @@ class DusktApp(App[None]):
                     "DDDDDDDD   UUUUUUU  SSSSSSSS  K    K      T      \n"
                     "                                  \n"
                     "DDDDDDDD   U     U  SSSSSSSS  K    K  TTTTTTTTTT\n"
-                    "D       D  U     U  S         K   K       T      \n"
-                    "D       D  U     U  SSSSSSSS  KKK         T      \n"
-                    "D       D  U     U         S  K   K       T      \n"
+                    "DD       D  U     U  S         K   K       T      \n"
+                    "DD       D  U     U  SSSSSSSS  KKK         T      \n"
+                    "DD       D  U     U         S  K   K       T      \n"
                     "DDDDDDDD   UUUUUUU  SSSSSSSS  K    K      T      ",
                     id="logo",
                 )
             with Vertical(classes="panel", id="url-panel"):
                 yield Static("URL", classes="prompt")
-                yield Input(placeholder="paste a video link, then press Enter", id="url-input")
+                yield ClipboardInput(
+                    placeholder="paste a video link, then press Enter", id="url-input"
+                )
                 yield Static("", id="url-error", classes="status")
             with Vertical(classes="panel hidden", id="details-panel"):
                 yield Static("Title", classes="prompt")
@@ -313,8 +332,9 @@ class DusktApp(App[None]):
                         else video.title,
                         progress,
                         option.audio_only,
+                        option.requires_merge,
                     )
-                except DownloadError as exc:
+                except Exception as exc:
                     self.query_one("#progress-text", Static).update(f"Download failed: {exc}")
                     return
                 completed_units += 1

@@ -63,6 +63,10 @@ the official GitHub Releases page before choosing **More info → Run anyway**.
 4. Press **Enter** to start downloading.
 5. Press **Q** to quit.
 
+On Windows, if normal `Ctrl+V` does not paste in the terminal, try
+`Ctrl+Shift+V` or `Shift+Insert`. Duskt also reads the system clipboard through
+these fallback shortcuts.
+
 Playlists are limited to the first 25 items. YouTube titles remain unchanged.
 Downloads are saved to:
 
@@ -77,7 +81,7 @@ On Windows, this means the user's standard Downloads folder.
 - Use an interactive terminal; duskt is a terminal application, not a windowed
   desktop app.
 - The terminal should support Unicode characters for the best display.
-- Some high-quality video formats require FFmpeg to merge separate video and
-  audio streams. If a selected format reports an FFmpeg error, choose an
-  audio-only or single-file video format.
+- If FFmpeg is unavailable, Duskt hides formats that require merging separate
+  video and audio streams. Audio-only and single-file video formats remain
+  available.
 - Only download content you are authorized to save and use.

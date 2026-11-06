@@ -9,6 +9,7 @@ description = "A minimal terminal video downloader"
 readme = "README.md"
 requires-python = ">=3.9"
 dependencies = [
+  "pyperclip>=1.8.2",
   "textual>=0.47.0",
   "yt-dlp>=2024.1.1",
 ]

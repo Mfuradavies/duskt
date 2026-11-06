@@ -15,6 +15,7 @@ class FormatOption:
     height: Optional[int]
     ext: str
     audio_only: bool = False
+    requires_merge: bool = False
 
 
 @dataclass(frozen=True)
@@ -73,9 +74,11 @@ class Downloader:
             message = str(exc).strip() or exc.__class__.__name__
             raise DownloadError(message) from exc
 
-        formats = self._formats(data.get("formats") or [])
+        formats = self._formats(data.get("formats") or [], allow_merge=self._has_ffmpeg())
         if not formats:
-            formats = (FormatOption("best", "Best available", None, "mp4"),)
+            raise DownloadError(
+                "No compatible formats were found. Install FFmpeg for more video formats."
+            )
         return VideoInfo(
             title=data.get("title") or "video",
             duration=data.get("duration"),
@@ -124,6 +127,7 @@ class Downloader:
         title: str,
         on_progress: Optional[ProgressCallback] = None,
         audio_only: bool = False,
+        requires_merge: bool = False,
     ) -> Path:
         url = self._single_video_url(url)
         output_dir.mkdir(parents=True, exist_ok=True)
@@ -141,7 +145,11 @@ class Downloader:
                 )
 
         options = {
-            "format": format_id if audio_only else f"{format_id}+bestaudio/best",
+            "format": (
+                format_id
+                if audio_only or not requires_merge
+                else f"{format_id}+bestaudio/best"
+            ),
             "outtmpl": output_template,
             "progress_hooks": [hook],
             "noplaylist": True,
@@ -165,7 +173,9 @@ class Downloader:
         return files[0]
 
     @staticmethod
-    def _formats(raw_formats: list[dict]) -> tuple[FormatOption, ...]:
+    def _formats(
+        raw_formats: list[dict], allow_merge: bool = True
+    ) -> tuple[FormatOption, ...]:
         options: list[FormatOption] = []
         seen: set[tuple[str, Optional[int], Optional[int], bool]] = set()
         for item in raw_formats:
@@ -177,6 +187,9 @@ class Downloader:
                 continue
             ext = item.get("ext") or "video"
             audio_only = not has_video
+            requires_merge = has_video and not has_audio
+            if requires_merge and not allow_merge:
+                continue
             bitrate = item.get("abr")
             key = (ext, height, bitrate if audio_only else None, audio_only)
             if not format_id or key in seen:
@@ -186,7 +199,9 @@ class Downloader:
                 note = f"AUDIO · {ext.upper()}{bitrate_label}"
             else:
                 note = f"VIDEO · {ext.upper()} · {height}p"
-            options.append(FormatOption(format_id, note, height, ext, audio_only))
+            options.append(
+                FormatOption(format_id, note, height, ext, audio_only, requires_merge)
+            )
             seen.add(key)
         options.sort(
             key=lambda option: (
@@ -202,6 +217,12 @@ class Downloader:
     def _safe_title(title: str) -> str:
         cleaned = "".join(char for char in title if char.isalnum() or char in " .-_")
         return " ".join(cleaned.split()).strip(" .")[:180] or "video"
+
+    @staticmethod
+    def _has_ffmpeg() -> bool:
+        import shutil
+
+        return shutil.which("ffmpeg") is not None
 
     @staticmethod
     def _single_video_url(url: str) -> str:
