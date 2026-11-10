@@ -54,6 +54,22 @@ Open PowerShell in the folder containing the download:
 If Windows SmartScreen appears, verify that you downloaded the executable from
 the official GitHub Releases page before choosing **More info → Run anyway**.
 
+#### Run `duskt` from any CMD directory
+
+The Windows download is a portable executable; you do not need to reinstall or
+open it from the Downloads folder each time. To make `duskt` available from
+anywhere:
+
+1. Create a permanent folder, for example
+   `%LOCALAPPDATA%\Programs\Duskt`, and move
+   `duskt-windows-x86_64.exe` into it.
+2. Rename the file to `duskt.exe`.
+3. In the Start menu, search for **Edit environment variables for your
+   account** and open it.
+4. Under **User variables**, select **Path** → **Edit** → **New**, then add
+   `%LOCALAPPDATA%\Programs\Duskt`. Confirm each dialog with **OK**.
+5. Close and reopen Command Prompt. You can now run `duskt` from any folder.
+
 ## Use duskt
 
 1. Paste a video or playlist URL and press **Enter**.
